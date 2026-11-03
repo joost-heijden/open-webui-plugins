@@ -10,6 +10,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python3 scripts/build-email-composer.py
+      - run: python3 -m unittest discover -s tests -p '*_test.py'
       - run: node scripts/build.mjs
       - run: git diff --exit-code
       - run: npm test
