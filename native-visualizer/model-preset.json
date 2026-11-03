@@ -4,7 +4,7 @@
     "base_model_id": "SELECT_YOUR_BASE_MODEL",
     "name": "Visualizer",
     "meta": {
-      "description": "Maakt grafieken en diagrammen",
+      "description": "Creates charts and diagrams",
       "tags": [
         {
           "name": "visualization"

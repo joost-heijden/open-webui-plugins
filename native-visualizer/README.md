@@ -15,7 +15,7 @@ This is an instruction package, not a new rendering engine. The default is **dat
 
 ### Shared Skill on existing models (recommended)
 
-1. Import [SKILL.md](SKILL.md) through Workspace → Skills, or create a Skill with those instructions. Use display name **Visualizer** and description **Maakt grafieken en diagrammen**.
+1. Import [SKILL.md](SKILL.md) through Workspace → Skills, or create a Skill with those instructions. Use display name **Visualizer** and description **Creates charts and diagrams**. You may translate the display description for your own deployment; the assistant responds in the user's language.
 2. Give the intended users read access to the Skill. Leave public write access disabled.
 3. In Admin Settings → Models, edit each existing model and select Visualizer under Skills. Save each model. Preserve existing system prompts and model settings.
 4. Check that “Load selected skills on demand” is off if your deployment needs the instructions included upfront. Do not change this instance-wide setting without considering other Skills.

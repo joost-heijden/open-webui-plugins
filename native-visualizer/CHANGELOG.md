@@ -2,7 +2,7 @@
 
 ## 0.1.1 — 2026-11-03
 
-- Shortened the display name to Visualizer and description to “Maakt grafieken en diagrammen”.
+- Shortened the display name to Visualizer and description to “Creates charts and diagrams”. The public package uses English; deployments may localize the display description.
 - Added a burgundy, gold, teal and cream default palette to chart, diagram and artifact instructions and examples.
 - Documented shared Skill installation on existing model profiles; the standalone preset is optional.
 - Kept existing package paths and IDs stable so installed model-to-skill links continue to work.

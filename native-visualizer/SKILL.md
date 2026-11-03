@@ -1,6 +1,6 @@
 ---
 name: Visualizer
-description: Maakt grafieken en diagrammen
+description: Creates charts and diagrams
 ---
 
 # Visualizer
