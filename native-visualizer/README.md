@@ -79,9 +79,12 @@ The instructions apply these colors through Vega-Lite properties, Mermaid flowch
 | Check | Status |
 | --- | --- |
 | Instruction/preset consistency and example policy checks | Automated local and GitHub checks |
-| Actual model behavior and data fidelity | Requires manual acceptance in your environment |
-| Open WebUI import, Skill loading, Artifacts and SVG rendering | Not yet tested in a live Open WebUI instance |
-| Gateway acceptance | Not yet tested; no guarantee is made |
+| Shared Skill on existing models | Verified in Open WebUI v0.12.5; selected automatically in new chats |
+| Mermaid and Vega-Lite rendering | Basic flowchart and charts verified in v0.12.5; chart values checked against fictional source data |
+| Default chart colors | Burgundy bars, cream background and brown text verified in a generated Vega-Lite SVG |
+| HTML Artifacts and model-preset import | Not yet tested in a live instance |
+| Gateway acceptance | Basic chart and diagram requests succeeded in one deployment; validate your own gateway policy |
+| Wider model behavior and data fidelity | Requires manual acceptance in your environment |
 
 Target standard Open WebUI versions with native Mermaid/Vega-Lite rendering and Artifacts. For Vega, use an updated release with upstream's external-resource restrictions (fixed in 0.11.0); this is not a claim that all later versions have been tested. Record exact tested versions in this table after running acceptance.
 
