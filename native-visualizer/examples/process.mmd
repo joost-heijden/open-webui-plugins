@@ -1,0 +1,5 @@
+flowchart TD
+    request["Receive request"] --> complete{"Complete?"}
+    complete -->|Yes| approve["Approve request"]
+    complete -->|No| details["Request details"]
+    details --> complete

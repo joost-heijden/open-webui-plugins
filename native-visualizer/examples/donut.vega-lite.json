@@ -1,0 +1,11 @@
+{
+  "title": "Fictional request categories",
+  "width": 480,
+  "height": 280,
+  "data": {"values": [{"category":"Information","requests":60},{"category":"Support","requests":30},{"category":"Other","requests":10}]},
+  "mark": {"type":"arc","innerRadius":65},
+  "encoding": {
+    "theta": {"field":"requests","type":"quantitative"},
+    "color": {"field":"category","type":"nominal","title":"Category"}
+  }
+}

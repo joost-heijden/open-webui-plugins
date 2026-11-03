@@ -1,0 +1,12 @@
+{
+  "title": "Fictional monthly requests",
+  "width": 480,
+  "height": 280,
+  "data": {"values": [{"month":"January","requests":120},{"month":"February","requests":180},{"month":"March","requests":150}]},
+  "mark": "bar",
+  "encoding": {
+    "x": {"field":"month","type":"ordinal","sort":["January","February","March"],"title":"Month"},
+    "y": {"field":"requests","type":"quantitative","title":"Requests","scale":{"zero":true}},
+    "color": {"value":"#4f46e5"}
+  }
+}
