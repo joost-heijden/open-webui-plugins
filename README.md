@@ -5,6 +5,7 @@ Independent extensions for standard Open WebUI installations. Each plugin has it
 | Plugin | Description | Components | Status |
 | --- | --- | --- | --- |
 | [Visualizer](native-visualizer/) | Creates charts and diagrams | Skill, system prompt, optional model preset | 0.1.1 preview |
+| [Email Composer](email-composer/) | Editable inline email cards and Microsoft 365 draft actions | Action Function, existing MCP connection | 0.1.0 experimental |
 
 Start with the plugin's README. No frontend patches or custom Open WebUI builds are required for Visualizer. Other plugins will document their own requirements.
 
