@@ -1,8 +1,8 @@
 # Email Composer
 
-**0.1.0 experimental preview** — an editable email card inside the existing chat, with native Open WebUI Actions for saving Outlook drafts and submitting them through the [Softeria Microsoft 365 MCP server](https://github.com/softeria/ms-365-mcp-server).
+**0.1.1 experimental preview** — an editable email card inside the existing chat, with native Open WebUI Actions for saving Outlook drafts and submitting them through the [Softeria Microsoft 365 MCP server](https://github.com/softeria/ms-365-mcp-server).
 
-The card has To, CC, BCC, subject, priority, and a rich text editor. The local interface is Dutch. Actions appear in the normal message toolbar **below the card**, not inside its sandbox. There is no browser extension, frontend fork, model preset, additional service, mailbox token in HTML, or browser-storage credential access.
+The card has To, CC, BCC, subject, priority, and a rich text editor. The interface and action labels are English. Actions appear in the normal message toolbar **below the card**, not inside its sandbox. There is no browser extension, frontend fork, model preset, additional service, mailbox token in HTML, or browser-storage credential access.
 
 **Not production validated.** Offline tests do not establish working OAuth, Graph delivery, browser CSP compatibility or permissions in your installation. Sending is disabled by default. Do not enable it until the acceptance checklist passes and your administrator approves the plugin.
 
@@ -23,17 +23,17 @@ No new pip dependencies are declared. Python, FastAPI and Pydantic are already p
 3. In its Valves, set `mcp_server_id` to the existing connection's **internal ID**, not its name or URL. Leave `enable_sending` false.
 4. Assign the Action to your existing models. Preserve their system prompts and existing tools/Skills, including Visualizer. No new model is required.
 5. Each user must authorize the MCP connection using Open WebUI's normal OAuth flow before using the Actions. This plugin does not implement a login screen or silently borrow another user's authorization.
-6. Start a new chat, ask the assistant to write an email, and click **E-mail bewerken** on the relevant assistant message. Its text becomes the initial message body. For prefilled fields, optionally append [model-instructions.md](model-instructions.md) to the existing model instructions. The Action recognizes that structured output without another model call. Unknown recipient addresses still require manual entry; never invent them.
+6. Start a new chat, ask the assistant to write an email, and click **Edit email** on the relevant assistant message. Its text becomes the initial message body. For prefilled fields, optionally append [model-instructions.md](model-instructions.md) to the existing model instructions. The Action recognizes that structured output without another model call. Unknown recipient addresses still require manual entry; never invent them.
 
 If Functions are blocked, obtain administrator approval; do not bypass the restriction. If the connection requires login, authorize through Open WebUI and retry. A failed call must never be treated as a successful save.
 
 ## Use
 
 - Edit the card directly. Recipient fields accept plain addresses separated by commas or semicolons. Display names, attachments, images, tables and arbitrary HTML are not supported. Paste is plain text.
-- **Concept opslaan** captures the current editor fields and shows a native confirmation containing recipients, subject, priority and the exact HTML body. This preview intentionally exposes HTML source in that confirmation; it is not a polished rich-text confirmation screen.
+- **Save draft** captures the current editor fields and shows a native confirmation containing recipients, subject, priority and the exact HTML body. This preview intentionally exposes HTML source in that confirmation; it is not a polished rich-text confirmation screen.
 - The action resolves the current user's existing MCP connection, checks enabled tool names and mailbox identity, then creates or updates the same draft. Removing CC/BCC sends empty arrays to clear them.
-- **E-mail versturen** requires the current fields to have been saved, administrator enablement, and a separate confirmation. It checks that the draft is still a draft and that its `changeKey` matches the last saved version.
-- **Opgeslagen kaart laden** restores the server's saved fields after confirmation, discarding local edits. It also refreshes the revision after reopening an older chat. Opening the composer again on the same message reuses its server record.
+- **Send email** requires the current fields to have been saved, administrator enablement, and a separate confirmation. It checks that the draft is still a draft and that its `changeKey` matches the last saved version.
+- **Load saved card** restores the server's saved fields after confirmation, discarding local edits. It also refreshes the revision after reopening an older chat. Opening the composer again on the same message reuses its server record.
 - A successful send means the MCP/Graph submission was accepted, **not that delivery was confirmed**. Status in the card is authoritative; the model does not reconstruct or execute the editor action.
 
 Saving and sending both require a live connected browser. No automatic background autosave is performed. Changes made while a save is in progress remain in the editor and are labelled unsaved after acknowledgement. Do not navigate away with unsaved changes: local edits are not persisted until an action succeeds.

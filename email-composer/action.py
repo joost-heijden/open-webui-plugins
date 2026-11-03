@@ -1,7 +1,7 @@
 """
 title: Email Composer
 author: Joost Heijden
-version: 0.1.0
+version: 0.1.1
 description: Editable inline email cards with user-scoped Microsoft 365 MCP draft actions. Experimental; requires deployment validation.
 required_open_webui_version: 0.12.5
 """
@@ -169,7 +169,7 @@ class Action:
     def __init__(self):
         self.valves = self.Valves()
         self.actions = [{'id': key, 'name': label} for key, label in (
-            ('open', 'E-mail bewerken'), ('save', 'Concept opslaan'), ('send', 'E-mail versturen'), ('reload', 'Opgeslagen kaart laden'))]
+            ('open', 'Edit email'), ('save', 'Save draft'), ('send', 'Send email'), ('reload', 'Load saved card'))]
 
     def store(self):
         from open_webui.env import DATA_DIR
@@ -236,7 +236,7 @@ try {
         if __id__ == 'reload':
             if state['status'] in ('busy', 'unknown'):
                 raise ValueError('Outcome uncertain. Ask an administrator to reconcile this card; do not create another copy.')
-            if await __event_call__({'type': 'confirmation', 'data': {'title': 'Opgeslagen versie laden', 'message': 'Niet-opgeslagen wijzigingen in deze kaart worden vervangen. Doorgaan?'}}) is True:
+            if await __event_call__({'type': 'confirmation', 'data': {'title': 'Load saved version', 'message': 'Unsaved changes in this card will be replaced. Continue?'}}) is True:
                 await self.browser(__event_call__, message, 'restore', {'card': card, **state})
             return
         if __id__ not in ('save', 'send'):
@@ -249,7 +249,7 @@ try {
                 raise ValueError('Save the current fields as a draft before sending')
         # Confirm the frozen payload, not an LLM summary. HTML source is included for exact review.
         approved = await __event_call__({'type': 'confirmation', 'data': {
-            'title': 'E-mail versturen' if __id__ == 'send' else 'Outlook-concept opslaan',
+            'title': 'Send email' if __id__ == 'send' else 'Save Outlook draft',
             'message': '\n'.join([f"{k}: {fields[k]}" for k in ('to', 'cc', 'bcc', 'subject', 'priority')]) + '\n\n' + fields['html']}})
         if approved is not True:
             return
