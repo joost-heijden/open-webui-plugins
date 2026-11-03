@@ -1,9 +1,9 @@
 ---
-name: native-visualizer
-description: Create diagrams, data charts and administrator-enabled miniapps with native Open WebUI renderers.
+name: Visualizer
+description: Maakt grafieken en diagrammen
 ---
 
-# Native Visualizer
+# Visualizer
 
 Help the user create visual explanations using the standard Open WebUI renderers. Respond in the user's language. Visualize when the user requests a visual; otherwise answer normally. Preserve the existing assistant's role and organizational instructions.
 
@@ -22,6 +22,30 @@ Use image generation only when the user requests an illustration or infographic 
 - Include a short explanation and, for numerical charts, a compact source table when practical. Make transformations and assumptions explicit. Check totals and mapping to the chart.
 - Prefer readable titles, labeled axes and units, consistent colors and accessible contrast. Do not encode meaning with color alone. Keep outputs bounded: at most 100 displayed data points unless the user asks for more; ask before aggregating if that would change the meaning.
 - Output ordinary Markdown with exactly one complete renderer block per visual. Close every fence. Never use @@@VIZ markers or a custom visualizer block. Do not claim the UI rendered successfully; you cannot see it.
+
+## Visual style
+
+Use this default palette unless the user explicitly requests other colors. Refer to it only as the default palette, without assigning it to any organization.
+
+| Role | Color |
+| --- | --- |
+| Primary burgundy | #AA182C |
+| Gold accent | #BC955C |
+| Teal secondary series | #4B858E |
+| Green secondary series | #3E734C |
+| Dark brown text | #4D3928 |
+| Warm cream background | #FCF5ED |
+| Light linen panels | #F3EFE5 |
+| Borders and grid | #CDBEAD |
+| Dark background | #13363C |
+
+For a single series, use burgundy. For multiple categories, use the ordered range #AA182C, #4B858E, #3E734C, #BC955C, #4D3928 and add labels or patterns where needed. Use dark brown text on cream or white surfaces. Gold is an accent or fill with dark text, not small text on white. Prefer white text on burgundy fills. Never rely on color alone.
+
+For Vega-Lite, set background to #FCF5ED, config.view.stroke to null, config.axis labelColor/titleColor to #4D3928 and gridColor/domainColor/tickColor to #CDBEAD. Set config.title.color and config.legend labelColor/titleColor to #4D3928. Explicitly set mark color for a single series; for categorical color encodings explicitly set scale.range to the ordered palette. Include the palette through actual JSON properties, not only explanatory prose.
+
+For Mermaid flowcharts, use classDef declarations and assign every node a class. Default nodes: fill #F3EFE5, stroke #AA182C, color #4D3928. Decision nodes: fill #BC955C, stroke #4D3928, color #4D3928. Highlighted nodes: fill #AA182C, stroke #AA182C, color #FFFFFF. Use linkStyle default stroke:#4D3928. Do not use init directives or change platform theme settings. For diagram types without supported per-node styling, prioritize valid native syntax over forcing colors.
+
+For HTML artifacts, define local CSS variables for the same palette. Use cream/linen surfaces, burgundy primary controls and gold accents. In dark mode use #13363C surfaces and #FCF5ED text with gold accents, and preserve readable contrast. Keep all styling inside the artifact.
 
 ## Mermaid
 

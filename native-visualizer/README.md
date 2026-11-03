@@ -1,6 +1,6 @@
-# Native Visualizer
+# Visualizer
 
-**0.1.0 preview** — visual explanations using Open WebUI's existing renderers. No Python plugin, frontend patch or custom container image.
+**0.1.1 preview** — visual explanations using Open WebUI's existing renderers. No Python plugin, frontend patch or custom container image.
 
 | Need | Route | Output |
 | --- | --- | --- |
@@ -12,6 +12,16 @@
 This is an instruction package, not a new rendering engine. The default is **data and diagrams**. Interactive HTML requires an explicit administrator opt-in and existing permission for JavaScript artifacts. It does not reproduce Inline Visualizer's streaming or chat bridges.
 
 ## Install (choose one route)
+
+### Shared Skill on existing models (recommended)
+
+1. Import [SKILL.md](SKILL.md) through Workspace → Skills, or create a Skill with those instructions. Use display name **Visualizer** and description **Maakt grafieken en diagrammen**.
+2. Give the intended users read access to the Skill. Leave public write access disabled.
+3. In Admin Settings → Models, edit each existing model and select Visualizer under Skills. Save each model. Preserve existing system prompts and model settings.
+4. Check that “Load selected skills on demand” is off if your deployment needs the instructions included upfront. Do not change this instance-wide setting without considering other Skills.
+5. Start a new chat with an existing model. Its Skill should already be selected; users do not need a separate model or manual Skill selection.
+
+The package path and preset ID remain `native-visualizer`. Existing Skill IDs should be retained when updating, so model-to-skill links survive. New Markdown imports may derive the Skill ID `visualizer` from the display name; on upgrade, choose Replace for the existing Skill in the import preview, or edit that Skill in place. The visible name is Visualizer.
 
 ### Existing model: simplest route
 
@@ -28,7 +38,7 @@ This is an instruction package, not a new rendering engine. The default is **dat
 
 The JSON is an array of model configurations, following upstream's current import structure. Actual import into an Open WebUI deployment remains to be verified; if your version rejects it, use the existing-model route.
 
-### Optional Skill
+### Skill in an individual chat
 
 Import [SKILL.md](SKILL.md) using Workspace → Skills, then explicitly select it in the chat (for example using a $ mention where supported). It contains the same instructions. Do not install both the Skill and model preset for the same chat. If lazy loading would require a tool call through your gateway, use the system-prompt route instead.
 
@@ -36,7 +46,7 @@ Import [SKILL.md](SKILL.md) using Workspace → Skills, then explicitly select i
 
 An administrator can append this line after the instructions, only where existing policy permits JavaScript artifacts:
 
-> Native Visualizer administrator configuration: ARTIFACTS mode is enabled. Use self-contained HTML/CSS/JavaScript for requested interactive miniapps.
+> Visualizer administrator configuration: ARTIFACTS mode is enabled. Use self-contained HTML/CSS/JavaScript for requested interactive miniapps.
 
 Use Open WebUI's existing artifact detection/preview settings. Do not enable same-origin access or change sandbox/CSP settings for this package. If scripts cannot run, keep the default mode.
 
@@ -47,6 +57,22 @@ Use Open WebUI's existing artifact detection/preview settings. Do not enable sam
 - In Artifacts mode: “Make a self-contained capacity calculator with a slider and a reset button. No external resources.”
 
 Use the [acceptance checklist](examples/acceptance.md) and supplied [bar](examples/bar.vega-lite.json), [line](examples/line.vega-lite.json), [donut](examples/donut.vega-lite.json), [diagram](examples/process.mmd) and [interactive artifact](examples/capacity.html). All example data is fictional. For a deterministic renderer check, ask the model to return an example unchanged inside its matching code fence.
+
+## Default colors
+
+| Use | Hex |
+| --- | --- |
+| Primary burgundy | `#AA182C` |
+| Gold accent | `#BC955C` |
+| Teal | `#4B858E` |
+| Green | `#3E734C` |
+| Dark brown text | `#4D3928` |
+| Cream background | `#FCF5ED` |
+| Linen panels | `#F3EFE5` |
+| Borders and grid | `#CDBEAD` |
+| Dark surfaces | `#13363C` |
+
+The instructions apply these colors through Vega-Lite properties, Mermaid flowchart classes and local artifact styles. They style newly generated visuals, not the surrounding Open WebUI interface or previous answers. Models can deviate; verify generated output. Other Mermaid diagram types may retain platform colors. Users can explicitly request a different palette.
 
 ## Compatibility and validation
 
