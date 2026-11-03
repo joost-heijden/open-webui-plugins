@@ -2,10 +2,64 @@
   "title": "Fictional daily visitors",
   "width": 480,
   "height": 280,
-  "data": {"values": [{"day":1,"visitors":80},{"day":2,"visitors":100},{"day":3,"visitors":90},{"day":4,"visitors":120}]},
-  "mark": {"type":"line","point":true},
+  "data": {
+    "values": [
+      {
+        "day": 1,
+        "visitors": 80
+      },
+      {
+        "day": 2,
+        "visitors": 100
+      },
+      {
+        "day": 3,
+        "visitors": 90
+      },
+      {
+        "day": 4,
+        "visitors": 120
+      }
+    ]
+  },
+  "mark": {
+    "type": "line",
+    "point": true,
+    "color": "#AA182C"
+  },
   "encoding": {
-    "x": {"field":"day","type":"ordinal","title":"Day"},
-    "y": {"field":"visitors","type":"quantitative","title":"Visitors","scale":{"zero":true}}
+    "x": {
+      "field": "day",
+      "type": "ordinal",
+      "title": "Day"
+    },
+    "y": {
+      "field": "visitors",
+      "type": "quantitative",
+      "title": "Visitors",
+      "scale": {
+        "zero": true
+      }
+    }
+  },
+  "background": "#FCF5ED",
+  "config": {
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "labelColor": "#4D3928",
+      "titleColor": "#4D3928",
+      "gridColor": "#CDBEAD",
+      "domainColor": "#CDBEAD",
+      "tickColor": "#CDBEAD"
+    },
+    "title": {
+      "color": "#4D3928"
+    },
+    "legend": {
+      "labelColor": "#4D3928",
+      "titleColor": "#4D3928"
+    }
   }
 }

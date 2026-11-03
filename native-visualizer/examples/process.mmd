@@ -3,3 +3,10 @@ flowchart TD
     complete -->|Yes| approve["Approve request"]
     complete -->|No| details["Request details"]
     details --> complete
+    classDef standard fill:#F3EFE5,stroke:#AA182C,color:#4D3928
+    classDef decision fill:#BC955C,stroke:#4D3928,color:#4D3928
+    classDef highlight fill:#AA182C,stroke:#AA182C,color:#FFFFFF
+    class request,details standard
+    class complete decision
+    class approve highlight
+    linkStyle default stroke:#4D3928

@@ -2,10 +2,64 @@
   "title": "Fictional request categories",
   "width": 480,
   "height": 280,
-  "data": {"values": [{"category":"Information","requests":60},{"category":"Support","requests":30},{"category":"Other","requests":10}]},
-  "mark": {"type":"arc","innerRadius":65},
+  "data": {
+    "values": [
+      {
+        "category": "Information",
+        "requests": 60
+      },
+      {
+        "category": "Support",
+        "requests": 30
+      },
+      {
+        "category": "Other",
+        "requests": 10
+      }
+    ]
+  },
+  "mark": {
+    "type": "arc",
+    "innerRadius": 65
+  },
   "encoding": {
-    "theta": {"field":"requests","type":"quantitative"},
-    "color": {"field":"category","type":"nominal","title":"Category"}
+    "theta": {
+      "field": "requests",
+      "type": "quantitative"
+    },
+    "color": {
+      "field": "category",
+      "type": "nominal",
+      "title": "Category",
+      "scale": {
+        "range": [
+          "#AA182C",
+          "#4B858E",
+          "#3E734C",
+          "#BC955C",
+          "#4D3928"
+        ]
+      }
+    }
+  },
+  "background": "#FCF5ED",
+  "config": {
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "labelColor": "#4D3928",
+      "titleColor": "#4D3928",
+      "gridColor": "#CDBEAD",
+      "domainColor": "#CDBEAD",
+      "tickColor": "#CDBEAD"
+    },
+    "title": {
+      "color": "#4D3928"
+    },
+    "legend": {
+      "labelColor": "#4D3928",
+      "titleColor": "#4D3928"
+    }
   }
 }
