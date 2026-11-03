@@ -4,9 +4,9 @@ Independent extensions for standard Open WebUI installations. Each plugin has it
 
 | Plugin | Description | Components | Status |
 | --- | --- | --- | --- |
-| [Native Visualizer](native-visualizer/) | Choose Artifacts for miniapps, Mermaid for diagrams and Vega-Lite for data charts. | System prompt, optional Skill, model preset | 0.1.0 preview |
+| [Visualizer](native-visualizer/) | Maakt grafieken en diagrammen | Skill, system prompt, optional model preset | 0.1.1 preview |
 
-Start with the plugin's README. No frontend patches or custom Open WebUI builds are required for Native Visualizer. Other plugins will document their own requirements.
+Start with the plugin's README. No frontend patches or custom Open WebUI builds are required for Visualizer. Other plugins will document their own requirements.
 
 This project is independent of Open WebUI and Classic298. The collection layout was inspired by [Classic298's plugin collection](https://github.com/Classic298/open-webui-plugins); implementation and instructions here are original.
 

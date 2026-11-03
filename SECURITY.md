@@ -1,6 +1,6 @@
 # Security and privacy
 
-Native Visualizer is a set of instructions and configuration. It does not install a Python tool, enforce a schema on model responses, or bypass gateway policy. Prompt instructions are not a security boundary.
+Visualizer is a set of instructions and configuration. It does not install a Python tool, enforce a schema on model responses, or bypass gateway policy. Prompt instructions are not a security boundary.
 
 Artifacts may execute model-generated JavaScript in Open WebUI's iframe. Use them only under your existing organizational policy and platform sandbox/CSP settings. Do not enable same-origin access or relax security settings for this package. The supplied example needs no access to the parent chat, storage, APIs or external libraries.
 
