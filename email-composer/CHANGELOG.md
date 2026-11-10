@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 — 2026-11-10
+
+- Add the model-scoped Auto Display Filter: prepared email responses become visual cards automatically after completion, without a manual toolbar click.
+- Include named Edit email, Save draft and Send email buttons inside the card, delegating to the existing native confirmation and authenticated Action workflow.
+- Replace generic toolbar sparkles with pencil, save, send and reload icons.
+- Permit unknown recipients while preparing a card; require a valid To address before saving/sending.
+- Disable unavailable mailbox operations and add clear Microsoft 365 connection status.
+- Extend mocked workflow and sandbox browser tests; refresh both theme screenshots.
+
 ## 0.1.2 — 2026-11-10
 
 - Replace the lavender editor with a neutral Minimal layout in light and dark.

@@ -1,12 +1,13 @@
 """
 title: Email Composer
 author: Joost Heijden
-version: 0.1.2
+version: 0.2.0
 description: Editable inline email cards with user-scoped Microsoft 365 MCP draft actions. Experimental; requires deployment validation.
 required_open_webui_version: 0.12.5
 """
 
 import asyncio
+import base64
 import hashlib
 import json
 import re
@@ -60,7 +61,7 @@ def clean_html(value):
     return ''.join(parser.parts)
 
 
-def snapshot(raw):
+def snapshot(raw, require_recipient=True):
     if not isinstance(raw, dict):
         raise ValueError('Invalid editor response')
     result = {}
@@ -74,7 +75,7 @@ def snapshot(raw):
         if len(addresses) > 100:
             raise ValueError('Too many recipients')
         result[key] = '; '.join(addresses)
-    if not result['to']:
+    if require_recipient and not result['to']:
         raise ValueError('At least one To recipient is required')
     subject, html = raw.get('subject', ''), raw.get('html', '')
     if not isinstance(subject, str) or len(subject) > 998 or '\r' in subject or '\n' in subject:
@@ -168,8 +169,16 @@ class Action:
 
     def __init__(self):
         self.valves = self.Valves()
-        self.actions = [{'id': key, 'name': label} for key, label in (
-            ('open', 'Edit email'), ('save', 'Save draft'), ('send', 'Send email'), ('reload', 'Load saved card'))]
+        paths = {
+            'open': '<path d="m4 16 12-12 4 4-12 12H4zM13 7l4 4"/>',
+            'save': '<path d="M5 3h12l3 3v15H4V3zM8 3v6h8V3M8 21v-8h8v8"/>',
+            'send': '<path d="m3 3 18 9-18 9 4-9zM7 12h14"/>',
+            'reload': '<path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/>',
+        }
+        self.actions = [{'id': key, 'name': label, 'icon_url': 'data:image/svg+xml;base64,' +
+                         base64.b64encode(('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + paths[key] + '</svg>').encode()).decode()}
+                        for key, label in (('open', 'Edit email'), ('save', 'Save draft'),
+                                           ('send', 'Send email'), ('reload', 'Load saved card'))]
 
     def store(self):
         from open_webui.env import DATA_DIR
@@ -214,9 +223,21 @@ const frame = () => {
  const frames = box ? box.querySelectorAll('iframe') : [];
  return frames.length === 1 ? frames[0] : null;
 };
-const sync = () => frame()?.contentWindow?.postMessage({type:'email-composer:theme', theme:theme()}, '*');
+const sync = () => frame()?.contentWindow?.postMessage({type:'email-composer:theme', theme:theme(), actions:true}, '*');
 const receive = e => {
- if(e.source === frame()?.contentWindow && e.data?.type === 'email-composer:theme-request' && e.data.card === CARD) sync();
+ const current = frame();
+ if(!current || e.source !== current.contentWindow || e.data?.card !== CARD) return;
+ if(e.data.type === 'email-composer:theme-request') sync();
+ if(e.data.type !== 'email-composer:action') return;
+ const labels = {save:'Save draft', send:'Send email'};
+ const label = labels[e.data.operation];
+ const message = document.getElementById('message-' + MESSAGE);
+ const buttons = label && message ? [...message.querySelectorAll('button')].filter(b => b.getAttribute('aria-label') === label) : [];
+ if(buttons.length !== 1 || buttons[0].disabled) {
+  current.contentWindow.postMessage({type:'email-composer:action-error', error:'Email action unavailable. Reopen the editor from the message toolbar.'}, '*');
+  return;
+ }
+ buttons[0].click();
 };
 const observer = new MutationObserver(sync);
 observer.observe(root, {attributes:true, attributeFilter:['class', 'style']});
@@ -231,6 +252,16 @@ return {ok:true};
         await asyncio.wait_for(event({'type': 'execute', 'data': {'code': code}}), timeout=10)
 
     async def action(self, body, __user__=None, __request__=None, __event_call__=None, __event_emitter__=None, __id__=None):
+        try:
+            return await self.perform(body, __user__, __request__, __event_call__, __event_emitter__, __id__)
+        finally:
+            if __event_call__ and __id__ in ('save', 'send'):
+                try:
+                    await self.browser(__event_call__, body['id'], 'idle')
+                except Exception:
+                    pass  # The authoritative result/error is retained if the browser disconnected.
+
+    async def perform(self, body, __user__=None, __request__=None, __event_call__=None, __event_emitter__=None, __id__=None):
         if not __user__ or not __event_call__:
             raise ValueError('An authenticated, connected browser is required')
         owner, chat, message = __user__['id'], body['chat_id'], body['id']
@@ -246,7 +277,7 @@ return {ok:true};
                 try:
                     candidate = json.loads(structured.group(1))
                     candidate['html'] = clean_html(candidate.get('html', ''))
-                    fields = snapshot(candidate)
+                    fields = snapshot(candidate, require_recipient=False)
                 except (ValueError, TypeError, AttributeError):
                     pass  # Keep the original text when structured output is invalid.
             state = {'fields': fields, 'revision': 0, 'status': 'local', 'draft_id': None,
@@ -259,7 +290,7 @@ return {ok:true};
             else:
                 card = store.create(owner, chat, message, state)
             await self.theme_bridge(__event_call__, message, card)
-            initial = json.dumps({'card': card, **state}, ensure_ascii=True).replace('<', '\\u003c')
+            initial = json.dumps({'card': card, **state, 'mailbox_configured': bool(self.valves.mcp_server_id), 'sending_enabled': self.valves.enable_sending}, ensure_ascii=True).replace('<', '\\u003c')
             return HTMLResponse(CARD_HTML.replace('/*INITIAL*/', initial), headers={'Content-Disposition': 'inline'})
         raw = await self.browser(__event_call__, message, 'snapshot')
         card = raw.get('card')

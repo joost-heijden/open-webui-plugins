@@ -1,12 +1,12 @@
 # Email Composer
 
-**0.1.2 experimental preview** — an editable email card inside the existing chat, with native Open WebUI Actions for saving Outlook drafts and submitting them through the [Softeria Microsoft 365 MCP server](https://github.com/softeria/ms-365-mcp-server).
+**0.2.0 experimental preview** — an editable email card inside the existing chat, with native Open WebUI Actions for saving Outlook drafts and submitting them through the [Softeria Microsoft 365 MCP server](https://github.com/softeria/ms-365-mcp-server).
 
-The card has To, CC, BCC, subject, priority, and a rich text editor. The interface and action labels are English. Actions appear in the normal message toolbar **below the card**, not inside its sandbox. There is no browser extension, frontend fork, model preset, additional service, mailbox token in HTML, or browser-storage credential access.
+The card has To, CC, BCC, subject, priority, and a rich text editor. The interface and action labels are English. The card now includes named **Edit email**, **Save draft** and **Send email** buttons. A scoped parent bridge delegates saving/sending to the same authenticated native Actions, preserving their frozen-field confirmation and server checks. The message-toolbar fallback uses recognizable pencil, save, send and reload icons. There is no browser extension, frontend fork, model preset, additional service, mailbox token in HTML, or browser-storage credential access.
 
 ## Minimal editor: light and dark
 
-The same compact layout works in both themes. These screenshots show the actual sandboxed editor with fictional content, not generated design mockups. The native **Edit email**, **Save draft** and **Send email** Actions remain below the card in Open WebUI and are outside these editor-only screenshots.
+The same compact layout works in both themes. These screenshots show the actual sandboxed editor with fictional content, not generated design mockups. The named buttons are inside the card. Screenshots show a fictional configured connection; saving/sending are disabled when the connection or administrator approval is missing.
 
 ### Light
 
@@ -25,7 +25,7 @@ The same compact layout works in both themes. These screenshots show the actual 
 
 ## Requirements
 
-- Standard Open WebUI v0.12.5 extension interfaces. Other versions require revalidation.
+- Open WebUI v0.13.3 for automatic display through the outlet-filter interface. The fallback Action uses v0.12.5 extension interfaces. Other versions require revalidation.
 - Administrator permission to install and execute Python Functions. This is a trusted server plugin and uses the documented `execute` browser event with fixed JavaScript. It runs with parent-page privileges. It does not change sandbox settings or read session storage/cookies. Existing CSP must already allow that native event; do not relax CSP for this package.
 - An existing administrator-configured **MCP Streamable HTTP** connection to Softeria, using **per-user OAuth 2.1 or OAuth 2.1 Static**, with stable `WEBUI_SECRET_KEY`. Shared bearer credentials and shared service accounts are outside this package's supported configuration.
 - JSON output from Softeria and enabled tools: `get-current-user`, `get-mail-message`, `create-draft-email`, `update-mail-message`. Add `send-draft-message` only for approved sending. Delegated scopes include `User.Read` and `Mail.ReadWrite`; sending also needs `Mail.Send`. Verify actual `tools/list` schemas and `--list-permissions` for your pinned server build. No org-mode requirement is implied solely by having a work mailbox.
@@ -36,24 +36,25 @@ No new pip dependencies are declared. Python, FastAPI and Pydantic are already p
 ## Install
 
 1. Review [function.py](function.py), the self-contained generated Function. Do **not** import `action.py`, which is the development template.
-2. In **Workspace → Functions**, create an Action Function from `function.py`, then activate it.
+2. In **Workspace → Functions**, create an Action Function from `function.py` using ID **`email_composer`**, then activate it. Function IDs accept underscores, not hyphens.
 3. In its Valves, set `mcp_server_id` to the existing connection's **internal ID**, not its name or URL. Leave `enable_sending` false.
 4. Assign the Action to your existing models. Preserve their system prompts and existing tools/Skills, including Visualizer. No new model is required.
 5. Each user must authorize the MCP connection using Open WebUI's normal OAuth flow before using the Actions. This plugin does not implement a login screen or silently borrow another user's authorization.
-6. Start a new chat, ask the assistant to write an email, and click **Edit email** on the relevant assistant message. Its text becomes the initial message body. For prefilled fields, optionally append [model-instructions.md](model-instructions.md) to the existing model instructions. The Action recognizes that structured output without another model call. Unknown recipient addresses still require manual entry; never invent them.
+6. Import [auto-display.py](auto-display.py) as a **Filter Function** with ID **`email_composer_auto`**, activate it and enable **Global**. It only applies its preparation instructions to models already assigned the Email Composer Action; other models are unchanged. It adds instructions after existing system content without replacing it. Replace any older manual-action instructions with [model-instructions.md](model-instructions.md) when maintaining model prompts.
+7. Start a new chat and ask for an email. Once the assistant finishes preparing the message, the Filter displays the composer automatically and replaces the structured output with a short ready message. No star-button click is required. Unknown recipients remain editable empty fields; saving still requires a valid To address. The fallback pencil Action can open existing messages manually.
 
 If Functions are blocked, obtain administrator approval; do not bypass the restriction. If the connection requires login, authorize through Open WebUI and retry. A failed call must never be treated as a successful save.
 
 ## Use
 
-- Edit the card directly. Recipient fields accept plain addresses separated by commas or semicolons. Display names, attachments, images, tables and arbitrary HTML are not supported. Paste is plain text.
+- **Edit email** focuses the editable message without discarding changes. Edit the card directly. Recipient fields accept plain addresses separated by commas or semicolons. Display names, attachments, images, tables and arbitrary HTML are not supported. Paste is plain text.
 - **Save draft** captures the current editor fields and shows a native confirmation containing recipients, subject, priority and the exact HTML body. This preview intentionally exposes HTML source in that confirmation; it is not a polished rich-text confirmation screen.
 - The action resolves the current user's existing MCP connection, checks enabled tool names and mailbox identity, then creates or updates the same draft. Removing CC/BCC sends empty arrays to clear them.
 - **Send email** requires the current fields to have been saved, administrator enablement, and a separate confirmation. It checks that the draft is still a draft and that its `changeKey` matches the last saved version.
 - **Load saved card** restores the server's saved fields after confirmation, discarding local edits. It also refreshes the revision after reopening an older chat. Opening the composer again on the same message reuses its server record.
 - A successful send means the MCP/Graph submission was accepted, **not that delivery was confirmed**. Status in the card is authoritative; the model does not reconstruct or execute the editor action.
 
-Saving and sending both require a live connected browser. No automatic background autosave is performed. Changes made while a save is in progress remain in the editor and are labelled unsaved after acknowledgement. Do not navigate away with unsaved changes: local edits are not persisted until an action succeeds.
+Saving and sending both require a live connected browser and a configured Microsoft 365 connection. The Filter automatically opens new email responses; it does not save drafts or submit mail. Card buttons invoke only the fixed save/send Actions on the same message and accept replies only from their parent. After a full browser reload, use the fallback pencil **Edit email** Action to re-register the native bridge for an existing card; this is required before in-card save/send and explicit app-theme synchronization. No sandbox or CSP permissions are changed. No automatic background autosave is performed. Changes made while a save is in progress remain in the editor and are labelled unsaved after acknowledgement. Do not navigate away with unsaved changes: local edits are not persisted until an action succeeds.
 
 ## Safety and operational limits
 
@@ -81,7 +82,7 @@ Offline: run `python3 scripts/build-email-composer.py`, `python3 -m unittest dis
 
 Before deployment, verify with fictional messages and authorized test mailboxes:
 
-- Card renders inside chat in v0.12.5 with unchanged sandbox/CSP; toolbar Actions work on the intended card.
+- Card appears automatically after a new email response in v0.13.3 with unchanged sandbox/CSP; named in-card buttons and fallback toolbar Actions target the intended card.
 - Hand-edited recipients, cleared CC/BCC, subject, quotes, non-ASCII text, links and supported formatting arrive correctly in Outlook. Inspect the confirmation and actual mailbox content.
 - Saving twice updates the same draft. Two rapid clicks produce one mutation. Edits during saving remain visibly unsaved.
 - Two users cannot load/modify each other's records; reconnecting to another mailbox stops the action.
