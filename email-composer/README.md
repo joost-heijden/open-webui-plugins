@@ -1,8 +1,25 @@
 # Email Composer
 
-**0.1.1 experimental preview** — an editable email card inside the existing chat, with native Open WebUI Actions for saving Outlook drafts and submitting them through the [Softeria Microsoft 365 MCP server](https://github.com/softeria/ms-365-mcp-server).
+**0.1.2 experimental preview** — an editable email card inside the existing chat, with native Open WebUI Actions for saving Outlook drafts and submitting them through the [Softeria Microsoft 365 MCP server](https://github.com/softeria/ms-365-mcp-server).
 
 The card has To, CC, BCC, subject, priority, and a rich text editor. The interface and action labels are English. Actions appear in the normal message toolbar **below the card**, not inside its sandbox. There is no browser extension, frontend fork, model preset, additional service, mailbox token in HTML, or browser-storage credential access.
+
+## Minimal editor: light and dark
+
+The same compact layout works in both themes. These screenshots show the actual sandboxed editor with fictional content, not generated design mockups. The native **Edit email**, **Save draft** and **Send email** Actions remain below the card in Open WebUI and are outside these editor-only screenshots.
+
+### Light
+
+![Minimal email composer in light mode](images/minimal-light.png)
+
+### Dark
+
+![Minimal email composer in dark mode](images/minimal-dark.png)
+
+- Recipient chips with individual removal; CC and BCC are revealed only when needed. Existing CC/BCC recipients are always revealed when a card loads.
+- Accessible icon controls for bold, italic, underline, links, bulleted lists and numbered lists.
+- Priority is available in the **Email options** menu. Non-normal priority remains visible in the header.
+- **Edit email** registers a small native theme bridge for that message. It follows the app's light/dark choice and subsequent changes without losing edits. No credentials or browser storage are read. After a full browser reload, an existing card falls back to the system color scheme until **Edit email** is used again; the sandbox cannot independently read the parent app's theme.
 
 **Not production validated.** Offline tests do not establish working OAuth, Graph delivery, browser CSP compatibility or permissions in your installation. Sending is disabled by default. Do not enable it until the acceptance checklist passes and your administrator approves the plugin.
 
@@ -58,7 +75,7 @@ There is no automated retention/cleanup in this preview. To remove, detach and d
 
 ## Validation and acceptance
 
-For the isolated sandbox browser check, install Playwright in your development environment and run `node tests/email-composer-browser.cjs` from the repository root. Set `CHROME_PATH` to an existing Chromium executable if needed; `PREVIEW_PATH` optionally saves a screenshot. This check does not run inside Open WebUI.
+For the isolated sandbox browser check (including app light/dark switching, recipient chips, CC/BCC, list and link editing, and 320/360px layouts), install Playwright in your development environment and run `node tests/email-composer-browser.cjs` from the repository root. Set `CHROME_PATH` to an existing Chromium executable if needed; `SCREENSHOT_DIR` optionally saves both theme screenshots. This check does not run inside Open WebUI.
 
 Offline: run `python3 scripts/build-email-composer.py`, `python3 -m unittest discover -s tests -p '*_test.py'`, and the repository's `npm test`. Tests mock Open WebUI and MCP and never connect to a real mailbox.
 
@@ -77,8 +94,9 @@ Before deployment, verify with fictional messages and authorized test mailboxes:
 | --- | --- |
 | Offline state, payload, isolation and mocked MCP workflow tests | Passed locally |
 | v0.12.5 Action, embed, socket callback and MCP OAuth interfaces | Source inspected |
-| Isolated Chromium sandbox: exact edited fields, desktop/360px layout, runtime errors | Passed locally |
-| Actual Open WebUI browser, OAuth and Microsoft 365 operation | **Not tested** |
+| Isolated Chromium sandbox: light/dark switching, exact edited fields, recipient chips, lists/links, desktop/320/360px layouts, runtime errors | Passed locally |
+| Open WebUI v0.13.3 editor rendering and native confirmation | Validated with fictional content; no mailbox operation |
+| OAuth and Microsoft 365 operation | **Not tested** |
 | Production readiness | **Experimental** |
 
 Sources: [v0.12.5 Actions](https://github.com/open-webui/open-webui/blob/v0.12.5/backend/open_webui/utils/actions.py), [native browser events](https://docs.openwebui.com/features/extensibility/plugin/development/events/), [MCP resolution](https://github.com/open-webui/open-webui/blob/v0.12.5/backend/open_webui/utils/tools.py), [Softeria endpoints](https://github.com/softeria/ms-365-mcp-server/blob/6f862af02568974b82867a366629b3f09b12d434/src/endpoints.json).

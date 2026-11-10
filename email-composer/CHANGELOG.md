@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2 — 2026-11-10
+
+- Replace the lavender editor with a neutral Minimal layout in light and dark.
+- Add recipient chips, on-demand CC/BCC fields, compact accessible formatting icons and a quiet priority menu. Both list types remain supported.
+- Synchronize the app theme through a fixed native bridge when opening the card; use system theme before the bridge is registered.
+- Insert links inline without requiring modal or form permissions in the sandbox.
+- Preserve uncertain/sent status notices while editing and allow the card height to shrink when content shrinks.
+- Add real light/dark editor screenshots and browser checks for theme switching, recipient editing, lists, links and narrow layouts.
+
 ## 0.1.1 — 2026-11-03
 
 - Use English by default for editor fields, formatting controls, action labels, confirmations and status messages.

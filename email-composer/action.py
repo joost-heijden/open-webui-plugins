@@ -1,7 +1,7 @@
 """
 title: Email Composer
 author: Joost Heijden
-version: 0.1.1
+version: 0.1.2
 description: Editable inline email cards with user-scoped Microsoft 365 MCP draft actions. Experimental; requires deployment validation.
 required_open_webui_version: 0.12.5
 """
@@ -200,6 +200,36 @@ try {
             raise ValueError('Editor communication failed. Keep this chat open and retry.')
         return result
 
+    async def theme_bridge(self, event, message, card):
+        # Open WebUI does not forward app theme changes into sandboxed HTML embeds.
+        # Read only the public root theme class; never read storage or credentials.
+        code = 'const [MESSAGE, CARD] = ' + json.dumps([message, card]) + ';\n' + r"""
+const bridges = window.__emailComposerThemes ??= new Map();
+bridges.get(MESSAGE)?.dispose();
+const root = document.documentElement;
+const media = matchMedia('(prefers-color-scheme: dark)');
+const theme = () => root.classList.contains('dark') ? 'dark' : root.classList.contains('light') ? 'light' : media.matches ? 'dark' : 'light';
+const frame = () => {
+ const box = document.getElementById(MESSAGE + '-embeds-container');
+ const frames = box ? box.querySelectorAll('iframe') : [];
+ return frames.length === 1 ? frames[0] : null;
+};
+const sync = () => frame()?.contentWindow?.postMessage({type:'email-composer:theme', theme:theme()}, '*');
+const receive = e => {
+ if(e.source === frame()?.contentWindow && e.data?.type === 'email-composer:theme-request' && e.data.card === CARD) sync();
+};
+const observer = new MutationObserver(sync);
+observer.observe(root, {attributes:true, attributeFilter:['class', 'style']});
+window.addEventListener('message', receive);
+media.addEventListener('change', sync);
+bridges.set(MESSAGE, {dispose:() => {
+ observer.disconnect(); window.removeEventListener('message', receive); media.removeEventListener('change', sync);
+}});
+sync();
+return {ok:true};
+"""
+        await asyncio.wait_for(event({'type': 'execute', 'data': {'code': code}}), timeout=10)
+
     async def action(self, body, __user__=None, __request__=None, __event_call__=None, __event_emitter__=None, __id__=None):
         if not __user__ or not __event_call__:
             raise ValueError('An authenticated, connected browser is required')
@@ -228,6 +258,7 @@ try {
                 state = json.loads(saved)
             else:
                 card = store.create(owner, chat, message, state)
+            await self.theme_bridge(__event_call__, message, card)
             initial = json.dumps({'card': card, **state}, ensure_ascii=True).replace('<', '\\u003c')
             return HTMLResponse(CARD_HTML.replace('/*INITIAL*/', initial), headers={'Content-Disposition': 'inline'})
         raw = await self.browser(__event_call__, message, 'snapshot')
