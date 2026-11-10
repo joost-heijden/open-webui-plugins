@@ -110,3 +110,52 @@ class Workflow(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.client.call_tool.await_count,1)
 
 if __name__=='__main__':unittest.main()
+
+class AutoDisplay(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        tree = ast.parse((ROOT / 'email-composer/auto-display.py').read_text())
+        tree.body = [n for n in tree.body if not (isinstance(n, ast.ImportFrom) and n.module == 'pydantic')]
+        scope = {'BaseModel': BaseModel, 'Field': Field}
+        exec(compile(tree, 'auto-display.py', 'exec'), scope)
+        self.filter = scope['Filter']()
+        self.filter.valves = types.SimpleNamespace(action_id='email_composer')
+        self.event = AsyncMock()
+        self.action = types.SimpleNamespace(Valves=lambda **kw: kw, action=AsyncMock(return_value=types.SimpleNamespace(body=b'<html>card</html>')))
+        functions = types.ModuleType('open_webui.models.functions')
+        functions.Functions = types.SimpleNamespace(get_function_by_id=AsyncMock(return_value=types.SimpleNamespace(type='action', is_active=True)), get_function_valves_by_id=AsyncMock(return_value={}))
+        plugin = types.ModuleType('open_webui.utils.plugin')
+        plugin.get_function_module_from_cache = AsyncMock(return_value=(self.action, None, None))
+        self.patch = patch.dict('sys.modules', {'open_webui.models.functions': functions, 'open_webui.utils.plugin': plugin})
+        self.patch.start()
+        self.body = {'id':'m','chat_id':'c','messages':[{'id':'m','role':'assistant','content':'```email-composer\n'+ns['json'].dumps({'to':'','subject':'Unknown recipient','html':'<p>Hello</p>'})+'\n```'}]}
+    async def asyncTearDown(self): self.patch.stop()
+    async def render(self):
+        return await self.filter.outlet(self.body, __user__={'id':'u'}, __request__=object(), __event_call__=AsyncMock(), __event_emitter__=self.event, __model__={'actions':[{'id':'email_composer.open'}]})
+    async def test_auto_embed_replaces_json_and_output(self):
+        result = await self.render()
+        self.assertEqual(result['messages'][-1]['content'], 'Email ready to review.')
+        self.assertEqual(result['messages'][-1]['output'][0]['content'][0]['text'], 'Email ready to review.')
+        self.event.assert_awaited_once_with({'type':'embeds','data':{'embeds':['<html>card</html>'],'replace':True}})
+        self.assertEqual(self.action.action.call_args.kwargs['__id__'], 'open')
+    async def test_other_messages_untouched(self):
+        self.body['messages'][-1]['content'] = 'An ordinary answer'
+        await self.render()
+        self.action.action.assert_not_awaited()
+    async def test_wrong_message_binding_is_ignored(self):
+        self.body['id'] = 'another'
+        await self.render()
+        self.action.action.assert_not_awaited()
+    async def test_action_must_be_assigned(self):
+        await self.filter.outlet(self.body, __user__={'id':'u'}, __request__=object(), __event_call__=AsyncMock(), __event_emitter__=self.event, __model__={'actions':[]})
+        self.action.action.assert_not_awaited()
+    async def test_inlet_preserves_system_and_deduplicates(self):
+        value = {'messages':[{'role':'system','content':'Keep existing rules'}]}
+        await self.filter.inlet(value, __model__={'actions':[{'id':'email_composer.open'}]})
+        first = copy.deepcopy(value)
+        await self.filter.inlet(value, __model__={'actions':[{'id':'email_composer.open'}]})
+        self.assertEqual(first, value)
+        self.assertTrue(value['messages'][0]['content'].startswith('Keep existing rules'))
+    def test_blank_recipient_is_editable_but_cannot_be_saved(self):
+        fields = {'to':'','subject':'Unknown recipient','html':'<p>Hello</p>'}
+        self.assertEqual(ns['snapshot'](fields, require_recipient=False)['subject'], 'Unknown recipient')
+        with self.assertRaises(ValueError): ns['snapshot'](fields)
